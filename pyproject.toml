@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vlmfw"
+version = "0.1.0"
+description = "A firewall that detects, classifies and removes hidden prompt injections in images before they reach a vision-language model."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy>=1.26",
+    "pillow>=10.0",
+    "pyyaml>=6.0",
+    "pandas>=2.0",
+    "opencv-python-headless>=4.9",
+    "tqdm>=4.66",
+]
+
+[project.optional-dependencies]
+# Install only what the current week needs: pip install -e ".[dev,train]"
+train = ["torch>=2.2", "torchvision>=0.17", "ultralytics>=8.2", "timm>=1.0", "scikit-learn>=1.4", "wandb>=0.17"]
+ocr = ["paddleocr>=2.7", "paddlepaddle>=2.6"]
+vlm = ["transformers>=4.44", "accelerate>=0.33", "datasets>=2.20"]
+serve = ["fastapi>=0.110", "uvicorn>=0.29", "python-multipart>=0.0.9"]
+dev = ["pytest>=8.0", "ruff>=0.5"]
+
+[project.scripts]
+vlmfw = "vlmfw.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

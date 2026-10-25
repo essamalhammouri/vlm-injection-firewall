@@ -1,0 +1,34 @@
+# All experiment settings live here, never hard-coded in scripts.
+seed: 1337
+
+paths:
+  raw_images: data/raw/coco_val2017          # clean source photos (public)
+  sentences: data/interim/sentences.csv      # filtered attack sentences
+  dataset: data/processed/attacks            # generated images + labels
+  results: results
+
+splits:
+  # Splitting is done per SOURCE PHOTO, before any attack is generated.
+  train: 0.70
+  val: 0.15
+  test: 0.15
+
+sentences:
+  max_chars: 150
+  min_chars: 15
+  language: en
+  # Sentences from these sources are used ONLY for the test split.
+  # Tests whether the firewall works on attacker wording it has never seen.
+  held_out_sources: [tensortrust]
+
+attacks:
+  fonts: ["DejaVuSans.ttf"]
+  tricks:
+    tiny:   {size: [8, 12]}
+    faint:  {alpha: [10, 40]}
+    rotated: {angle: [-90, 90]}
+    blended: {color_offset: [-12, 12]}
+    split:  {parts: [2, 3]}
+  max_tricks_per_image: 3
+  negative_fraction: 0.30        # share of images with NO attack
+  harmless_text_fraction: 0.10   # share with normal visible text, no attack
