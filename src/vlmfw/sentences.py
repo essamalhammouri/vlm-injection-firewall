@@ -17,4 +17,14 @@ def filter_sentences(df: pd.DataFrame, min_chars: int, max_chars: int) -> pd.Dat
       * the `source` and `label` columns are preserved
     Then skim ~50 random rows by eye before trusting the result.
     """
-    raise NotImplementedError("Week 1: implement filter_sentences")
+    out = df.copy()
+    out["sentence"] = (
+        out["sentence"]
+        .str.replace(r"\\n", " ", regex=True)
+        .str.replace(r"\s+", " ", regex=True)
+        .str.strip()
+    )
+    key = out["sentence"].str.lower()
+    out = out[~key.duplicated()]
+    out = out[out["sentence"].str.len().between(min_chars, max_chars)]
+    return out
