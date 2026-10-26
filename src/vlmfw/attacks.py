@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import random
 
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 
 from vlmfw.schemas import Box
 
@@ -37,7 +37,21 @@ def add_text(
       * every pixel that differs from the input lies inside the returned box
       * the box lies fully inside the image
     """
-    raise NotImplementedError("Week 1: implement add_text")
+    if font_path is None:
+        font = ImageFont.load_default(size=size)
+    else:
+        font = ImageFont.truetype(font_path, size)
+
+    layer = Image.new("RGBA", img.size, (0, 0, 0, 0))
+    draw = ImageDraw.Draw(layer)
+    rng = rng or random.Random()
+    left, top, right, bottom = draw.textbbox((0, 0), text, font=font)
+    x = rng.randint(0, max(0, img.width - right))
+    y = rng.randint(0, max(0, img.height - bottom))
+    draw.text((x, y), text, font=font, fill=(*color, alpha))
+    box = layer.getbbox()
+    out = Image.alpha_composite(img.convert("RGBA"), layer).convert("RGB")
+    return out, box
 
 
 def render_attack(
