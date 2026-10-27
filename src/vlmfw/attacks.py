@@ -11,6 +11,7 @@ Design (see docs/architecture.md):
 from __future__ import annotations
 
 import random
+import textwrap
 
 from PIL import Image, ImageDraw, ImageFont
 
@@ -43,13 +44,14 @@ def add_text(
     else:
         font = ImageFont.truetype(font_path, size)
 
-    # 1. write the text on a small see-through sheet, just big enough for it
-    left, top, right, bottom = ImageDraw.Draw(Image.new("RGBA", (1, 1))).textbbox(
-        (0, 0), text, font=font
-    )
+    # 1. break long sentences into lines that fit the photo, write them on a small sheet
+    probe = ImageDraw.Draw(Image.new("RGBA", (1, 1)))
+    char_width = max(1.0, probe.textlength(text, font=font) / max(1, len(text)))
+    per_line = max(8, int(0.8 * img.width / char_width))
+    wrapped = "\n".join(textwrap.wrap(text, width=per_line))
+    left, top, right, bottom = probe.multiline_textbbox((0, 0), wrapped, font=font)
     sheet = Image.new("RGBA", (right, bottom), (0, 0, 0, 0))
-    ImageDraw.Draw(sheet).text((0, 0), text, font=font, fill=(*color, alpha))
-
+    ImageDraw.Draw(sheet).multiline_text((0, 0), wrapped, font=font, fill=(*color, alpha))
     # 2. tilt it, then cut away the empty corners
     sheet = sheet.rotate(angle, expand=True)
     ink = sheet.getbbox()
