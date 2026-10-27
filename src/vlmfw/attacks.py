@@ -37,18 +37,32 @@ def add_text(
       * every pixel that differs from the input lies inside the returned box
       * the box lies fully inside the image
     """
+    rng = rng or random.Random()
     if font_path is None:
         font = ImageFont.load_default(size=size)
     else:
         font = ImageFont.truetype(font_path, size)
 
+    # 1. write the text on a small see-through sheet, just big enough for it
+    left, top, right, bottom = ImageDraw.Draw(Image.new("RGBA", (1, 1))).textbbox(
+        (0, 0), text, font=font
+    )
+    sheet = Image.new("RGBA", (right, bottom), (0, 0, 0, 0))
+    ImageDraw.Draw(sheet).text((0, 0), text, font=font, fill=(*color, alpha))
+
+    # 2. tilt it, then cut away the empty corners
+    sheet = sheet.rotate(angle, expand=True)
+    ink = sheet.getbbox()
+    if ink is None:
+        return img.convert("RGB"), None
+    sheet = sheet.crop(ink)
+
+    # 3. choose a random place where the whole sheet fits, and paste it
+    x = rng.randint(0, max(0, img.width - sheet.width))
+    y = rng.randint(0, max(0, img.height - sheet.height))
     layer = Image.new("RGBA", img.size, (0, 0, 0, 0))
-    draw = ImageDraw.Draw(layer)
-    rng = rng or random.Random()
-    left, top, right, bottom = draw.textbbox((0, 0), text, font=font)
-    x = rng.randint(0, max(0, img.width - right))
-    y = rng.randint(0, max(0, img.height - bottom))
-    draw.text((x, y), text, font=font, fill=(*color, alpha))
+    layer.paste(sheet, (x, y))
+
     box = layer.getbbox()
     out = Image.alpha_composite(img.convert("RGBA"), layer).convert("RGB")
     return out, box
