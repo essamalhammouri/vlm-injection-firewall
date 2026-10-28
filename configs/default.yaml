@@ -27,7 +27,7 @@ attacks:
     tiny:   {size: [8, 12]}
     faint:  {alpha: [10, 40]}
     rotated: {angle: [-90, 90]}
-    blended: {color_offset: [-12, 12]}
+    blended: {color_offset: [3, 12]}
     split:  {parts: [2, 3]}
   max_tricks_per_image: 3
   negative_fraction: 0.30        # share of images with NO attack

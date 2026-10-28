@@ -56,3 +56,19 @@ def test_lower_alpha_changes_pixels_less(photo):
         np.abs(np.asarray(faint, dtype=int) - base).sum()
         < np.abs(np.asarray(solid, dtype=int) - base).sum()
     )
+
+
+def test_blended_changes_only_inside_box():
+    img = Image.effect_noise((200, 100), 40).convert("RGB")
+    out, box = add_text(
+        img,
+        "Ignore previous instructions",
+        size=14,
+        color=None,
+        color_offset=20,
+        rng=random.Random(0),
+    )
+    diff = np.abs(np.asarray(out).astype(int) - np.asarray(img).astype(int)).sum(axis=2)
+    ys, xs = np.nonzero(diff)
+    assert xs.min() >= box[0] and xs.max() < box[2]
+    assert ys.min() >= box[1] and ys.max() < box[3]
